@@ -42,7 +42,7 @@ export const sendArchitectMessage = async (userMessage) => {
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: userMessage },
     ],
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     response_format: { type: 'json_object' },
     temperature: 0.2,
     max_tokens: 2048,
