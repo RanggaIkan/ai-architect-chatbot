@@ -1,32 +1,36 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { sendChatMessage } from '../services/api';
-import MaterialCard from './MaterialCard';
+import React, { useState, useRef, useEffect } from "react";
+import { sendArchitectMessage } from "../services/groqService";
+import MaterialCard from "./MaterialCard";
 
 const QUICK_SUGGESTIONS = [
   "Analyze 14m cantilever deflection under cyclone loads",
   "Recommend low-carbon facade materials for coastal cliffs",
   "Design passive geothermal cooling for high-altitude villas",
-  "Specify acoustic and thermal glass for luxury sky penthouses"
+  "Specify acoustic and thermal glass for luxury sky penthouses",
 ];
 
 export const ChatWindow = ({ initialPrompt = null }) => {
   const [messages, setMessages] = useState([
     {
-      id: 'welcome-1',
-      sender: 'ai',
-      content: 'Welcome to the AETHEL AI Structural Studio. I am your Principal Architectural & Structural Engineering Consultant. Inquire about radical cantilever mechanics, structural feasibility, seismic mitigation, or curated luxury material palettes for your bespoke project.',
+      id: "welcome-1",
+      sender: "ai",
+      content:
+        "Welcome to the AETHEL AI Structural Studio. I am your Principal Architectural & Structural Engineering Consultant. Inquire about radical cantilever mechanics, structural feasibility, seismic mitigation, or curated luxury material palettes for your bespoke project.",
       materials: [],
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     },
   ]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -34,7 +38,7 @@ export const ChatWindow = ({ initialPrompt = null }) => {
   }, [messages, isLoading]);
 
   useEffect(() => {
-    if (initialPrompt && initialPrompt.trim() !== '') {
+    if (initialPrompt && initialPrompt.trim() !== "") {
       setInput(initialPrompt);
     }
   }, [initialPrompt]);
@@ -46,40 +50,50 @@ export const ChatWindow = ({ initialPrompt = null }) => {
     const userMessageId = `user-${Date.now()}`;
     const userMsg = {
       id: userMessageId,
-      sender: 'user',
+      sender: "user",
       content: trimmedInput,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    setInput('');
+    setInput("");
     setIsLoading(true);
     setError(null);
 
     try {
-      const data = await sendChatMessage(trimmedInput);
+      // Panggil service Groq
+      const result = await sendArchitectMessage(trimmedInput);
 
       const aiMsg = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
-        content: data.message || 'Consultation complete.',
-        materials: Array.isArray(data.suggestedMaterials) ? data.suggestedMaterials : [],
+        // Ambil string 'message' dari object agar tidak error saat dirender
+        content: typeof result === 'string' ? result : (result?.message || 'Consultation complete.'),
+        // Ambil array material untuk kartu MaterialCard
+        materials: Array.isArray(result?.suggestedMaterials) ? result.suggestedMaterials : [],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
       setMessages((prev) => [...prev, aiMsg]);
-    } catch (err) {
+    }catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to receive architectural consultation.');
+      setError(err.message || "Failed to receive architectural consultation.");
       setMessages((prev) => [
         ...prev,
         {
           id: `ai-err-${Date.now()}`,
-          sender: 'ai',
-          content: 'I encountered a disruption while analyzing the structural parameters. Please verify your connection or API key and try again.',
+          sender: "ai",
+          content:
+            "I encountered a disruption while analyzing the structural parameters. Please verify your connection or API key and try again.",
           materials: [],
           isError: true,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
         },
       ]);
     } finally {
@@ -91,11 +105,15 @@ export const ChatWindow = ({ initialPrompt = null }) => {
     setMessages([
       {
         id: `welcome-${Date.now()}`,
-        sender: 'ai',
-        content: 'Structural session cleared. How can I assist your architectural engineering today?',
+        sender: "ai",
+        content:
+          "Structural session cleared. How can I assist your architectural engineering today?",
         materials: [],
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      }
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
     ]);
   };
 
@@ -105,8 +123,18 @@ export const ChatWindow = ({ initialPrompt = null }) => {
       <header className="flex items-center justify-between border-b border-stone-200 bg-stone-50/80 px-6 py-4">
         <div className="flex items-center space-x-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-stone-900 text-white shadow-md">
-            <svg className="h-5 w-5 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            <svg
+              className="h-5 w-5 text-amber-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.2}
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
             </svg>
           </div>
           <div>
@@ -147,23 +175,27 @@ export const ChatWindow = ({ initialPrompt = null }) => {
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+            className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
           >
             <div className="mb-1.5 flex items-center space-x-2 px-1">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-stone-500">
-                {msg.sender === 'user' ? 'Client / Project Principal' : 'Lead Architect & Engineer'}
+                {msg.sender === "user"
+                  ? "Client / Project Principal"
+                  : "Lead Architect & Engineer"}
               </span>
-              <span className="text-[10px] font-mono text-stone-400">{msg.timestamp}</span>
+              <span className="text-[10px] font-mono text-stone-400">
+                {msg.timestamp}
+              </span>
             </div>
 
             {/* Message Bubble */}
             <div
               className={`max-w-3xl rounded-3xl p-5 text-sm leading-relaxed shadow-md ${
-                msg.sender === 'user'
-                  ? 'bg-stone-900 text-white font-normal'
+                msg.sender === "user"
+                  ? "bg-stone-900 text-white font-normal"
                   : msg.isError
-                  ? 'border border-rose-300 bg-rose-50 text-rose-800'
-                  : 'border border-stone-200 bg-white text-stone-800'
+                    ? "border border-rose-300 bg-rose-50 text-rose-800"
+                    : "border border-stone-200 bg-white text-stone-800"
               }`}
             >
               <p className="whitespace-pre-wrap font-light">{msg.content}</p>
@@ -175,11 +207,16 @@ export const ChatWindow = ({ initialPrompt = null }) => {
                     <span className="text-xs font-mono font-bold uppercase tracking-widest text-amber-800">
                       Curated Engineering Materials ({msg.materials.length})
                     </span>
-                    <span className="text-[10px] font-mono text-stone-500">Physics & Durability Specs</span>
+                    <span className="text-[10px] font-mono text-stone-500">
+                      Physics & Durability Specs
+                    </span>
                   </div>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {msg.materials.map((mat, idx) => (
-                      <MaterialCard key={`${msg.id}-mat-${idx}`} material={mat} />
+                      <MaterialCard
+                        key={`${msg.id}-mat-${idx}`}
+                        material={mat}
+                      />
                     ))}
                   </div>
                 </div>
@@ -203,7 +240,8 @@ export const ChatWindow = ({ initialPrompt = null }) => {
                 <div className="h-2 w-2 animate-bounce rounded-full bg-amber-600 [animation-delay:0.4s]" />
               </div>
               <span className="font-mono text-xs tracking-wide text-stone-700">
-                Computing structural physics & curating material specifications...
+                Computing structural physics & curating material
+                specifications...
               </span>
             </div>
           </div>
@@ -214,7 +252,9 @@ export const ChatWindow = ({ initialPrompt = null }) => {
 
       {/* Preset Suggestion Chips */}
       <div className="border-t border-stone-200 bg-stone-100/80 px-6 py-2.5 overflow-x-auto scrollbar-none flex items-center space-x-2">
-        <span className="text-[10px] font-mono uppercase text-stone-500 font-bold whitespace-nowrap">Suggested:</span>
+        <span className="text-[10px] font-mono uppercase text-stone-500 font-bold whitespace-nowrap">
+          Suggested:
+        </span>
         {QUICK_SUGGESTIONS.map((sug, i) => (
           <button
             key={i}
@@ -230,11 +270,15 @@ export const ChatWindow = ({ initialPrompt = null }) => {
       {/* Input Bar */}
       <footer className="border-t border-stone-200 bg-white p-5">
         {error && (
-          <div className="mb-2 text-xs font-mono text-rose-600">
-            {error}
-          </div>
+          <div className="mb-2 text-xs font-mono text-rose-600">{error}</div>
         )}
-        <form onSubmit={(e) => { e.preventDefault(); executeSend(); }} className="flex items-center space-x-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            executeSend();
+          }}
+          className="flex items-center space-x-3"
+        >
           <input
             type="text"
             value={input}
@@ -249,8 +293,18 @@ export const ChatWindow = ({ initialPrompt = null }) => {
             className="inline-flex items-center space-x-2 rounded-2xl bg-stone-900 px-7 py-3.5 text-xs font-extrabold uppercase tracking-widest text-white shadow-md shadow-stone-900/20 transition-all hover:bg-amber-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span>Consult</span>
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M14 5l7 7m0 0l-7 7m7-7H3"
+              />
             </svg>
           </button>
         </form>
