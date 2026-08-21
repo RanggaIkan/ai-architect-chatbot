@@ -27,8 +27,9 @@ export const sendArchitectMessage = async (userMessage) => {
   }
 
   const apiKey = process.env.REACT_APP_GROQ_API_KEY;
-  if (!apiKey || apiKey.trim() === '') {
-    throw new Error('REACT_APP_GROQ_API_KEY is missing in client/.env');
+
+  if (!apiKey) {
+    throw new Error('REACT_APP_GROQ_API_KEY is missing in environment variables.');
   }
 
   const groq = new Groq({ 
@@ -41,7 +42,7 @@ export const sendArchitectMessage = async (userMessage) => {
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: userMessage },
     ],
-    model: 'openai/gpt-oss-120b',
+    model: 'llama-3.3-70b-versatile',
     response_format: { type: 'json_object' },
     temperature: 0.2,
     max_tokens: 2048,
@@ -52,12 +53,16 @@ export const sendArchitectMessage = async (userMessage) => {
     throw new Error('Received empty response from Groq LLM.');
   }
 
-  const parsedData = JSON.parse(content);
-
-  return {
-    message: parsedData.message || '',
-    suggestedMaterials: Array.isArray(parsedData.suggestedMaterials)
-      ? parsedData.suggestedMaterials
-      : [],
-  };
+  try {
+    const parsedData = JSON.parse(content);
+    return {
+      message: parsedData.message || '',
+      suggestedMaterials: Array.isArray(parsedData.suggestedMaterials) ? parsedData.suggestedMaterials : [],
+    };
+  } catch (parseError) {
+    return {
+      message: content,
+      suggestedMaterials: [],
+    };
+  }
 };
