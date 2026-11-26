@@ -1,4 +1,6 @@
-import { getGroqChatCompletion } from '../services/groqService.js';
+import { getGeminiArchitecturalConsultation } from '../services/geminiService.js';
+
+const MAX_MESSAGE_LENGTH = 4000;
 
 /**
  * Handle incoming architectural chat consultation requests.
@@ -15,17 +17,29 @@ export const handleChat = async (req, res) => {
       });
     }
 
-    const aiResponse = await getGroqChatCompletion(message.trim());
+    if (message.trim().length > MAX_MESSAGE_LENGTH) {
+      return res.status(400).json({
+        success: false,
+        error: `Validation Error: Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters.`,
+      });
+    }
+
+    const { data, meta } = await getGeminiArchitecturalConsultation(message.trim());
 
     return res.status(200).json({
       success: true,
-      data: aiResponse,
+      data,
+      meta,
     });
   } catch (error) {
     console.error('[ChatController Error]:', error);
-    return res.status(500).json({
+    const status = error?.statusCode || (String(error?.message || '').includes('429') ? 429 : 500);
+    return res.status(status).json({
       success: false,
-      error: 'An error occurred while processing the architectural consultation.',
+      error:
+        status === 429
+          ? 'The AI studio is temporarily busy due to high demand. Please retry in a moment.'
+          : 'An error occurred while processing the architectural consultation.',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }

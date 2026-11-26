@@ -175,6 +175,6 @@ export const STUDIO_CAPABILITIES = [
   {
     icon: "⚡",
     title: "AI Structural Consulting",
-    desc: "Integrated LLM intelligence powered by Groq LLaMA-3.1 providing immediate material recommendations, durability simulations, and physical data."
+    desc: "Integrated LLM intelligence powered by Google Gemini 4 Hydrogen providing structured material recommendations, durability simulations, and structural physics insights."
   }
 ];

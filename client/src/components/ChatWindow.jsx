@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { sendArchitectMessage } from "../services/groqService";
+import { sendChatMessage } from "../services/api";
 import MaterialCard from "./MaterialCard";
 
 const QUICK_SUGGESTIONS = [
@@ -64,21 +64,20 @@ export const ChatWindow = ({ initialPrompt = null }) => {
     setError(null);
 
     try {
-      // Panggil service Groq
-      const result = await sendArchitectMessage(trimmedInput);
+      // Call server-side Gemini API (/api/chat) — API key stays strictly on server
+      const result = await sendChatMessage(trimmedInput);
 
       const aiMsg = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
-        // Ambil string 'message' dari object agar tidak error saat dirender
         content: typeof result === 'string' ? result : (result?.message || 'Consultation complete.'),
-        // Ambil array material untuk kartu MaterialCard
         materials: Array.isArray(result?.suggestedMaterials) ? result.suggestedMaterials : [],
+        model: result?.model || null,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
       setMessages((prev) => [...prev, aiMsg]);
-    }catch (err) {
+    } catch (err) {
       console.error(err);
       setError(err.message || "Failed to receive architectural consultation.");
       setMessages((prev) => [
@@ -87,7 +86,8 @@ export const ChatWindow = ({ initialPrompt = null }) => {
           id: `ai-err-${Date.now()}`,
           sender: "ai",
           content:
-            "I encountered a disruption while analyzing the structural parameters. Please verify your connection or API key and try again.",
+            err.message ||
+            "I encountered a temporary disruption while analyzing the structural parameters. Please try again in a moment.",
           materials: [],
           isError: true,
           timestamp: new Date().toLocaleTimeString([], {
@@ -141,7 +141,7 @@ export const ChatWindow = ({ initialPrompt = null }) => {
             <h2 className="text-sm md:text-base font-extrabold tracking-tight text-stone-900 flex items-center gap-2 font-serif-luxury">
               <span>Studio AI Principal Architect</span>
               <span className="rounded-md bg-amber-100 px-2 py-0.5 text-[9px] font-mono font-bold text-amber-900 border border-amber-300 uppercase">
-                LLaMA-3.1
+                Gemini 4 Hydrogen
               </span>
             </h2>
             <p className="text-[11px] font-medium text-stone-500 font-mono">
@@ -164,7 +164,7 @@ export const ChatWindow = ({ initialPrompt = null }) => {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600"></span>
             </span>
             <span className="font-mono text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
-              Groq Engine Online
+              Gemini AI Online
             </span>
           </div>
         </div>
@@ -186,6 +186,11 @@ export const ChatWindow = ({ initialPrompt = null }) => {
               <span className="text-[10px] font-mono text-stone-400">
                 {msg.timestamp}
               </span>
+              {msg.model && (
+                <span className="rounded bg-stone-200/80 px-1.5 py-0.5 text-[9px] font-mono text-stone-600">
+                  {msg.model}
+                </span>
+              )}
             </div>
 
             {/* Message Bubble */}

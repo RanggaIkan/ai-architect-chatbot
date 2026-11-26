@@ -94,7 +94,7 @@ export const Hero = ({ onExplore, onOpen3D, onConsult }) => {
               <span className="text-[10px] font-mono uppercase tracking-widest text-stone-500">AI Intelligence</span>
               <span className="text-[10px] text-emerald-700 font-mono font-bold">Live</span>
             </div>
-            <span className="block text-2xl font-black text-amber-700">Groq LLaMA-3.1</span>
+            <span className="block text-2xl font-black text-amber-700">Gemini 4 Hydrogen</span>
             <span className="text-[11px] text-stone-500">Material & Physics Engine</span>
           </div>
         </div>

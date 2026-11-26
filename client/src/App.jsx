@@ -93,8 +93,8 @@ export default function App() {
                   <span className="text-xs text-stone-500 uppercase tracking-wider font-mono">Carbon Provenance Sourced</span>
                 </div>
                 <div>
-                  <span className="block text-2xl font-black text-amber-700 font-mono">&lt; 0.2s</span>
-                  <span className="text-xs text-stone-500 uppercase tracking-wider font-mono">Groq AI Inference Latency</span>
+                  <span className="block text-2xl font-black text-amber-700 font-mono">Gemini 4</span>
+                  <span className="text-xs text-stone-500 uppercase tracking-wider font-mono">Server-Side AI Engine</span>
                 </div>
               </div>
             </div>
@@ -128,7 +128,7 @@ export default function App() {
               Studio AI Structural Consultant
             </h2>
             <p className="mt-2.5 text-sm text-stone-600 font-light">
-              Chat directly with our AI Principal Architect powered by Groq LLaMA-3.1. Inquire about load-bearing mechanics, seismic mitigation, or request tailored luxury material specifications in real time.
+              Chat directly with our AI Principal Architect powered by Google Gemini 4 Hydrogen. Inquire about load-bearing mechanics, seismic mitigation, or request tailored luxury material specifications in real time.
             </p>
           </div>
 
@@ -162,7 +162,7 @@ export default function App() {
             AETHEL <span className="text-amber-700 font-sans font-light">STUDIO</span>
           </span>
           <p>© 2026 AETHEL ARCHITECTURE & REAL ESTATE. All rights reserved.</p>
-          <span className="font-mono text-[11px] text-stone-400">Powered by Groq LLaMA-3.1 Engine</span>
+          <span className="font-mono text-[11px] text-stone-400">Powered by Google Gemini 4 Hydrogen</span>
         </div>
       </footer>
     </div>

@@ -1,9 +1,10 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = (process.env.REACT_APP_API_URL || '/api').replace(/\/$/, '');
 
 /**
- * Sends a message to the AI Architect Chatbot backend.
- * @param {string} message - User's prompt / query.
- * @returns {Promise<{ message: string, suggestedMaterials: Array }>} Structured AI response.
+ * Sends a message to the server-side AI Architect Chatbot API.
+ * Keeps GEMINI_API_KEY strictly on the server (Vercel Function / Express backend).
+ * @param {string} message - User's prompt / architectural query.
+ * @returns {Promise<{ message: string, suggestedMaterials: Array, model?: string }>}
  */
 export const sendChatMessage = async (message) => {
   if (!message || typeof message !== 'string') {
@@ -19,13 +20,19 @@ export const sendChatMessage = async (message) => {
       body: JSON.stringify({ message: message.trim() }),
     });
 
-    const result = await response.json();
+    const result = await response.json().catch(() => ({}));
 
     if (!response.ok || !result.success) {
-      throw new Error(result.error || `HTTP error! status: ${response.status}`);
+      throw new Error(result.error || `Request failed with status ${response.status}`);
     }
 
-    return result.data;
+    return {
+      message: result.data?.message || '',
+      suggestedMaterials: Array.isArray(result.data?.suggestedMaterials)
+        ? result.data.suggestedMaterials
+        : [],
+      model: result.meta?.model || null,
+    };
   } catch (error) {
     console.error('[API Service Error]: Failed to send chat message:', error);
     throw error;
