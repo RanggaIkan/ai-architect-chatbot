@@ -102,6 +102,7 @@ async function generateArchitectConsultation(userMessage) {
   if (!apiKey) {
     const err = new Error('GEMINI_API_KEY is not configured on the server.');
     err.statusCode = 500;
+    err.isConfigError = true;
     throw err;
   }
 
@@ -215,16 +216,22 @@ export default {
       );
     } catch (error) {
       console.error('[AI Architect /api/chat Error]:', error);
-      const isRateLimit = isRetryableModelError(error);
-      const status =
-        error?.statusCode || (isRateLimit ? 429 : 500);
+      const isConfigError = Boolean(error?.isConfigError);
+      const isRateLimit = !isConfigError && isRetryableModelError(error);
+      const status = isConfigError
+        ? 500
+        : isRateLimit
+          ? 429
+          : error?.statusCode || 500;
 
       return Response.json(
         {
           success: false,
-          error: isRateLimit
-            ? 'The AI studio is temporarily busy due to high demand. Please retry in a moment.'
-            : 'Unable to complete architectural consultation right now. Please try again shortly.',
+          error: isConfigError
+            ? 'Server AI configuration is incomplete (GEMINI_API_KEY is missing in Vercel Environment Variables).'
+            : isRateLimit
+              ? 'The AI studio is temporarily busy due to high demand. Please retry in a moment.'
+              : 'Unable to complete architectural consultation right now. Please try again shortly.',
         },
         { status },
       );
