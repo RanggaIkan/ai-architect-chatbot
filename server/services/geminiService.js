@@ -100,7 +100,7 @@ export const getGeminiArchitecturalConsultation = async (userMessage) => {
     throw new Error('Invalid input: userMessage must be a non-empty string.');
   }
 
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const apiKey = (process.env.GEMINI_API_KEY || process.env.GEMINI_KEY)?.trim();
   if (!apiKey) {
     console.error('[GeminiService Error]: GEMINI_API_KEY is missing in server/.env!');
     const err = new Error('GEMINI_API_KEY is not configured on the server.');

@@ -98,9 +98,9 @@ function parseStructuredOutput(rawText) {
 }
 
 async function generateArchitectConsultation(userMessage) {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const apiKey = (process.env.GEMINI_API_KEY || process.env.GEMINI_KEY)?.trim();
   if (!apiKey) {
-    const err = new Error('GEMINI_API_KEY is not configured on the server.');
+    const err = new Error('GEMINI_API_KEY (or GEMINI_KEY) is not configured on the server.');
     err.statusCode = 500;
     err.isConfigError = true;
     throw err;
